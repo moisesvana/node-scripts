@@ -1,0 +1,19 @@
+{
+  "name": "token-expire",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "jwt-decode": "^4.0.0",
+    "ts-node": "^10.9.2"
+  },
+  "volta": {
+    "node": "18.20.2"
+  }
+}

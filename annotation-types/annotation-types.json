@@ -1,0 +1,247 @@
+[
+  {
+    "department": "vana",
+    "created_at": "2024-07-16T18:56:49.624Z",
+    "id": "comment",
+    "name": "Comentario",
+    "status": "enabled"
+  },
+  {
+    "department": "Engineering & Data Science",
+    "metadata": {
+      "result": {
+        "hardreject": {
+          "style": {
+            "color": "#EB5757",
+            "backgroundColor": "#fce6e6",
+            "borderColor": "#EB5757"
+          },
+          "preview_text": "Documento rechazado"
+        },
+        "default": {
+          "style": {
+            "color": "#42CE91",
+            "backgroundColor": "#FFF",
+            "borderColor": "#42CE91"
+          },
+          "preview_text": "Documento rechazado"
+        },
+        "softreject": {
+          "style": {
+            "color": "#EB5757",
+            "backgroundColor": "#fff",
+            "borderColor": "#EB5757"
+          },
+          "preview_text": "Documento rechazado"
+        }
+      }
+    },
+    "created_at": "2024-07-16T18:56:49.624Z",
+    "id": "manual_rejected",
+    "name": "Rechazo manual de solicitudes",
+    "status": "enabled"
+  },
+  {
+    "department": "Engineering & Data Science",
+    "metadata": {
+      "result": {
+        "default": {
+          "style": {
+            "color": "##EB5757",
+            "backgroundColor": "#fce6e6",
+            "borderColor": "#EB5757"
+          },
+          "preview_text": "Usuario enviado a casa de cobros"
+        }
+      }
+    },
+    "created_at": "2024-07-16T18:56:49.624Z",
+    "id": "collection_house_assignment",
+    "name": "Asignacion a casa de cobros",
+    "status": "enabled"
+  },
+  {
+    "department": "Engineering & Data Science",
+    "metadata": {
+      "result": {
+        "rejected": {
+          "style": {
+            "color": "#EB5757",
+            "backgroundColor": "#fce6e6",
+            "borderColor": "#EB5757"
+          },
+          "preview_text": "Pago no encontrado "
+        },
+        "approved": {
+          "style": {
+            "color": "#42CE91",
+            "backgroundColor": "#e3f8ef",
+            "borderColor": "#42CE91"
+          },
+          "preview_text": "Pago aprobado"
+        },
+        "default": {
+          "style": {
+            "color": "#708090",
+            "backgroundColor": "#FFF",
+            "borderColor": "#E6E8F0"
+          },
+          "preview_text": "Aprobación/Rechazo de pagos manuales"
+        }
+      }
+    },
+    "created_at": "2024-07-16T18:56:49.624Z",
+    "id": "payment_update_status",
+    "name": "Aprobacion/rechazo de pagos manuales",
+    "status": "enabled"
+  },
+  {
+    "department": "Engineering & Data Science",
+    "metadata": {
+      "result": {
+        "call": {
+          "backgroundColor": "#FFF",
+          "borderColor": "#F6F8FB",
+          "preview_text": "Necesita llamada",
+          "color": "#708090"
+        },
+        "hardreject": {
+          "style": {
+            "color": "#EB5757",
+            "backgroundColor": "#fce6e6",
+            "borderColor": "#EB5757"
+          },
+          "preview_text": "Hard Reject"
+        },
+        "approved": {
+          "style": {
+            "color": "#42CE91",
+            "backgroundColor": "#FFF",
+            "borderColor": "#42CE91"
+          },
+          "preview_text": "Documento aprobado"
+        },
+        "default": {
+          "style": {
+            "color": "#708090",
+            "backgroundColor": "#FFF",
+            "borderColor": "#F6F8FB"
+          },
+          "preview_text": "Ejecución de motor de decisiones de solicitudes"
+        },
+        "softreject": {
+          "style": {
+            "color": "#EB5757",
+            "backgroundColor": "#FFF",
+            "borderColor": "#EB5757"
+          },
+          "preview_text": "Soft Reject"
+        },
+        "documentreject": {
+          "style": {
+            "color": "#EB5757",
+            "backgroundColor": "#FFF",
+            "borderColor": "#EB5757"
+          },
+          "preview_text": "Documento rechazado"
+        }
+      }
+    },
+    "created_at": "2024-07-16T18:56:49.624Z",
+    "id": "decision_engine_status",
+    "name": "Ejecución de motor de decisiones de solicitudes",
+    "status": "enabled"
+  },
+  {
+    "department": "Legal and compliance",
+    "metadata": {
+      "result": {
+        "rejected": {
+          "style": {
+            "color": "#EB5757",
+            "backgroundColor": "#EB5757",
+            "borderColor": "#EB5757"
+          },
+          "preview_text": "Rechazado por compliance"
+        },
+        "default": {
+          "style": {
+            "color": "#708090",
+            "backgroundColor": "#FFF",
+            "borderColor": "#F6F8FB"
+          },
+          "preview_text": "Chequeo de compliance"
+        },
+        "approved": {
+          "style": {
+            "color": "#708090",
+            "backgroundColor": "#FFF",
+            "borderColor": "#F6F8FB"
+          },
+          "preview_text": "Aprobado por compliance"
+        }
+      }
+    },
+    "created_at": "2024-07-16T18:56:49.624Z",
+    "id": "compliance_check",
+    "name": "Chequeo de compliance",
+    "status": "enabled"
+  },
+  {
+    "department": "Engineering & Data Science",
+    "metadata": {
+      "result": {
+        "default": {
+          "style": {
+            "color": "#EB5757",
+            "backgroundColor": "#FFF",
+            "borderColor": "#EB5757"
+          },
+          "preview_text": "Rechazo automático de solicitudes"
+        }
+      }
+    },
+    "created_at": "2024-07-16T18:56:49.624Z",
+    "id": "automated_rejected",
+    "name": "Rechazo automático de solicitudes",
+    "status": "enabled"
+  },
+  {
+    "department": "Engineering & Data Science",
+    "metadata": {
+      "result": {
+        "default": {
+          "style": {
+            "color": "#2AA0C6",
+            "backgroundColor": "#FFF",
+            "borderColor": "#2AA0C6"
+          },
+          "preview_text": "Usuario bajo revisión"
+        }
+      }
+    },
+    "created_at": "2024-08-28T18:56:49.624Z",
+    "id": "review",
+    "name": "Review",
+    "status": "enabled"
+  },
+  {
+    "department": "Engineering & Data Science",
+    "metadata": {
+      "result": {
+        "default": {
+          "style": {
+            "color": "#708090",
+            "backgroundColor": "#FFF",
+            "borderColor": "#F6F8FB"
+          },
+          "preview_text": "Resumen proceso automático de solicitudes"
+        }
+      }
+    },
+    "created_at": "2024-07-16T18:56:49.624Z",
+    "id": "automatic_request_check",
+    "name": "Resumen proceso automático de solicitudes",
+    "status": "enabled"
+  }
+]
