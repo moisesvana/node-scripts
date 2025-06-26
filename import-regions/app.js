@@ -3,7 +3,7 @@ const XLSX = require("xlsx");
 const { v4: uuidv4 } = require("uuid");
 const R = require("ramda");
 
-const TABLE_NAME = "geography_records_dev";
+const TABLE_NAME = "geography_records";
 const FILE_PATH = "regions.xlsx";
 const SHEET_NAMES = ["Guatemala", "Dominicana", "Honduras", "Perú"];
 const AREAS_ALLOWED = [
