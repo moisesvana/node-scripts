@@ -59,7 +59,11 @@ function buildNewProps(oldProps) {
     email: oldProps.email,
     first_name: oldProps.first_name,
     last_name: oldProps.last_name,
-    role: Array.isArray(oldProps.roles) ? oldProps.roles[0] : "",
+    role: Array.isArray(oldProps.roles)
+      ? oldProps.roles[0]
+      : oldProps?.role?.length > 0
+      ? oldProps.role
+      : "",
     status: oldProps.status,
     updated_at: new Date().toISOString(),
     extra_permissions: {
@@ -80,12 +84,14 @@ async function updateUsers(users) {
         pk: user.pk,
         sk: user.sk,
       },
-      UpdateExpression: "set #props = :props",
+      UpdateExpression: "set #props = :props, #shown_id = :shown_id",
       ExpressionAttributeNames: {
         "#props": "props",
+        "#shown_id": "shown_id",
       },
       ExpressionAttributeValues: {
         ":props": newProps,
+        ":shown_id": user.email,
       },
     };
     try {
