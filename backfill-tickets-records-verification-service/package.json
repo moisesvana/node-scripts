@@ -1,0 +1,23 @@
+{
+  "name": "backfill-tickets-records-verification-service",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "ticket-request": "node -r dotenv/config ticket-request.js",
+    "checkpoints": "node -r dotenv/config checkpoints.js",
+    "checkpoints-photo": "node -r dotenv/config checkpoints-photo.js",
+    "checkpoints-user": "node -r dotenv/config checkpoints-user.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "aws-sdk": "^2.1692.0",
+    "dotenv": "^17.2.2",
+    "ramda": "^0.30.1",
+    "uuid": "^11.1.0",
+    "xlsx": "^0.18.5"
+  }
+}
