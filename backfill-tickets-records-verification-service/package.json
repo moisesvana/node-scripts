@@ -8,6 +8,7 @@
     "checkpoints": "node -r dotenv/config checkpoints.js",
     "checkpoints-photo": "node -r dotenv/config checkpoints-photo.js",
     "checkpoints-user": "node -r dotenv/config checkpoints-user.js",
+    "update-created-at": "node -r dotenv/config ticket-request-update.js",
     "all": "concurrently --prefix \"[{name}]\" --names \"ticket-request,checkpoints,checkpoints-photo,checkpoints-user\" --colors \"blue,green,yellow,red\" \"npm run ticket-request\" \"npm run checkpoints\" \"npm run checkpoints-photo\" \"npm run checkpoints-user\""
   },
   "keywords": [],
