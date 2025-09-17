@@ -81,7 +81,7 @@ async function init() {
   let count = 0;
   let failedCount = 0;
   const failedTickets = [];
-  const batchSize = 500;
+  const batchSize = Number(process.env.BATCH_SIZE) || 500;
 
   console.log("Iniciando consulta de tickets...");
   console.log(`Rango de fechas: ${START_DATE} hasta ${END_DATE}`);
@@ -187,7 +187,7 @@ async function init() {
           `Procesados ${count} registros. Continuando con el siguiente lote...`
         );
         // wait 500ms
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        //await new Promise((resolve) => setTimeout(resolve, 500));
       }
     } catch (err) {
       console.error("Error consultando DynamoDB:", err);
