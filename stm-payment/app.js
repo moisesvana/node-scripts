@@ -1,6 +1,6 @@
 import AWS from "aws-sdk";
-import { OpenSearchClient } from "./opensearch-client.js";
 import fs from "fs";
+import { OpenSearchClient } from "./opensearch-client.js";
 
 AWS.config.update({ region: "us-east-1" });
 
@@ -10,7 +10,7 @@ const nodeName = process.env.OPENSEARCH_NODE;
 const username = process.env.OPENSEARCH_USERNAME;
 const password = process.env.OPENSEARCH_PASSWORD;
 const indexName = process.env.OPENSEARCH_INDEX_NAME || "stm_payment_dev";
-const tableName = process.env.STM_PAYMENT_TABLE;
+const stmPaymentTableName = process.env.STM_PAYMENT_TABLE;
 
 const secrets = {
   username: username,
@@ -29,7 +29,7 @@ async function init() {
         must: [
           {
             terms: {
-              "intent_status.keyword": ["processing"],
+              "intent_status.keyword": ["processing", "test"],
             },
           },
           {
@@ -87,6 +87,7 @@ async function init() {
   console.log("items", items.length);
 
   const notFound = [];
+  let updatedCount = 0;
 
   for (const item of items) {
     const pk = `ORG|vana|PINTENT|${item.intent_id}`;
@@ -96,7 +97,7 @@ async function init() {
     console.log("DynamoDB SK:", sk);
 
     const params = {
-      TableName: tableName,
+      TableName: stmPaymentTableName,
       Key: {
         pk: pk,
         sk: sk,
@@ -104,21 +105,71 @@ async function init() {
     };
 
     try {
-      const result = await dynamodb.get(params).promise();
-      if (result.Item) {
-        console.log("DynamoDB record:", result.Item.status);
+      const dynamoItem = await dynamodb.get(params).promise();
+      if (dynamoItem.Item) {
+        const dynamoStatus = dynamoItem.Item.status;
+        if (dynamoStatus === item.intent_status) {
+          console.log("Status matches, no action needed.");
+        } else {
+          console.log("DynamoDB record found, updating updated_at...");
+
+          const currentUpdatedAt = dynamoItem.Item.updated_at;
+          const newUpdatedAt = new Date(
+            new Date(currentUpdatedAt).getTime() + 1000
+          ).toISOString();
+
+          const updateParams = {
+            TableName: stmPaymentTableName,
+            Key: {
+              pk: pk,
+              sk: sk,
+            },
+            UpdateExpression: "SET #updated_at = :updated_at",
+            ExpressionAttributeNames: {
+              "#updated_at": "updated_at",
+            },
+            ExpressionAttributeValues: {
+              ":updated_at": newUpdatedAt,
+            },
+          };
+
+          await dynamodb.update(updateParams).promise();
+          updatedCount++;
+          console.log(`Updated updated_at for ${item.intent_id}`);
+        }
       } else {
         console.log("No record found for pk:", pk);
         notFound.push({
           intent_id: item.intent_id,
           status: item.intent_status,
           loan_id: item.loan_id,
+          intent_created_at: item.intent_created_at,
         });
+
+        // Delete document from OpenSearch
+        try {
+          const deleteResult = await openSearchClient.deleteDocument({
+            index: indexName,
+            id: item.intent_id,
+          });
+          console.log(
+            `Deleted from OpenSearch: ${item.intent_id} - Result: ${deleteResult.result}`
+          );
+        } catch (deleteErr) {
+          console.error(
+            `Error deleting from OpenSearch (${item.intent_id}):`,
+            deleteErr.message
+          );
+        }
       }
+      console.log("--------------------------------------------------");
+      console.log("\n");
     } catch (err) {
       console.error("Error getting record from DynamoDB:", err);
     }
   }
+
+  console.log(`\nTotal records updated: ${updatedCount}`);
 
   if (notFound.length > 0) {
     if (!fs.existsSync("logs")) {
@@ -127,7 +178,9 @@ async function init() {
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const fileName = `logs/not-found-${timestamp}.json`;
     fs.writeFileSync(fileName, JSON.stringify(notFound, null, 2));
-    console.log(`\nNot found records saved to ${fileName}. Total: ${notFound.length}`);
+    console.log(
+      `\nNot found records saved to ${fileName}. Total: ${notFound.length}`
+    );
   }
 }
 

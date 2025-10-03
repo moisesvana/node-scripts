@@ -56,6 +56,21 @@ export class OpenSearchClient {
     }
     return response;
   }
+
+  async deleteDocument(input) {
+    const { index, id } = input;
+
+    await this.setClient();
+    const deleteResult = await this.client.delete({
+      index: index,
+      id: id,
+    });
+
+    return {
+      success: deleteResult?.body?.result === "deleted",
+      result: deleteResult?.body?.result,
+    };
+  }
 }
 
 const formatAggregations = (aggs) => {
