@@ -1,0 +1,1041 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform:
+  - AWS::Serverless-2016-10-31
+  - Name: DatadogServerless
+    Parameters:
+      stackName: !Ref "AWS::StackName"
+      nodeLayerVersion: 122
+      extensionLayerVersion: 72
+      apiKey: !Sub "{{resolve:secretsmanager:${EnvironmentType}/general:SecretString:DATADOG/API_KEY}}"
+      env: !Ref EnvironmentType
+      service: internal-tickets
+      version: 1.0.0
+      tags: "team:internal-tools"
+Description: >
+  internal-tickets
+
+  Stack for internal-tickets request/payments
+
+Parameters:
+  ServiceName:
+    Description: The service name
+    Type: String
+    Default: internal-tickets
+  EnvironmentType:
+    Description: The environment type
+    Type: String
+    Default: dev
+    AllowedValues:
+      - prod
+      - qa
+      - dev
+    ConstraintDescription: must be prod, qa or dev
+
+Conditions:
+  ProdEnvironment: !Equals [!Ref EnvironmentType, prod]
+
+Mappings:
+  EnvVars:
+    dev:
+      rulesengineendpoint: https://rules-engine.api.dev.vana-private.com
+      opensearchcluster: https://vpc-vana-opensearch-cluster-qa-4e7ysrspfcicppf63rem4kkjre.us-east-1.es.amazonaws.com
+      securitygroupid: sg-0c46bd0fcbebd2d0a
+      storageapiendpoint: https://storage.api.dev.vana-private.com
+      verificationapiendpoint: https://credit.api.dev.vana-private.com
+      userapiendpoint: https://user.api.dev.vana-private.com
+      loanrequestapiendpoint: https://credit.api.dev.vana-private.com
+      fdtEndPoint: https://api.dev.vana-fdt.com
+      listoPrivateUrl: https://listo.api.dev.vana-private.com
+    qa:
+      rulesengineendpoint: https://rules-engine.api.qa.vana-private.com
+      opensearchcluster: https://vpc-vana-opensearch-cluster-qa-4e7ysrspfcicppf63rem4kkjre.us-east-1.es.amazonaws.com
+      securitygroupid: sg-0c4e83115446c5181
+      storageapiendpoint: https://storage.api.qa.vana-private.com
+      verificationapiendpoint: https://credit.api.qa.vana-private.com
+      userapiendpoint: https://user.api.qa.vana-private.com
+      loanrequestapiendpoint: https://credit.api.qa.vana-private.com
+      fdtEndPoint: https://api.qa.vana-fdt.com
+      listoPrivateUrl: https://listo.api.qa.vana-private.com
+    prod:
+      rulesengineendpoint: https://rules-engine.api.vana-private.com
+      opensearchcluster: https://vpc-vana-opensearch-cluster-prod-6yvldc2d5ijltl2bixui6zcjde.us-east-1.es.amazonaws.com
+      securitygroupid: sg-04b9a173e58182e48
+      storageapiendpoint: https://storage.api.vana-private.com
+      verificationapiendpoint: https://credit.api.vana-private.com
+      userapiendpoint: https://user.api.vana-private.com
+      loanrequestapiendpoint: https://credit.api.vana-private.com
+      fdtEndPoint: https://api.vana-fdt.com
+      listoPrivateUrl: https://listo.api.vana-private.com
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 512
+    Runtime: nodejs22.x
+    CodeUri: internal-tickets/
+    Environment:
+      Variables:
+        ENVIRONMENT_TYPE: !Ref EnvironmentType
+        ENVIRONMENT_SUFFIX:
+          !If [ProdEnvironment, "", !Sub "_${EnvironmentType}"]
+        CTR_TABLE: !Ref CostumerTicketsRecordsTable
+        DD_METRICS: true
+        OPENSEARCH_CLUSTER_HOST:
+          !FindInMap [EnvVars, !Ref EnvironmentType, opensearchcluster]
+        OPENSEARCH_SECRET_ID: "opensearch-cluster"
+        LOAN_REQUEST_API_SECRET_ID: "internal-tools/loan-request-private-api"
+        NODE_NO_WARNINGS: 1
+        OPEN_AI_BASE_URL: https://api.openai.com/v1
+        OPEN_AI_MODEL: gpt-4
+        OPEN_AI_SECRET_NAME: internal-tools/chatgpt-api-key
+        INTERNAL_STORAGE_API_SECRET_ID: "internal-tools/storage-api"
+        STORAGE_API_ENDPOINT:
+          !FindInMap [EnvVars, !Ref EnvironmentType, storageapiendpoint]
+        INTERNAL_VERIFICATION_API_SECRET_ID: "internal-tools/verification-api"
+        VERIFICATION_API_ENDPOINT:
+          !FindInMap [EnvVars, !Ref EnvironmentType, verificationapiendpoint]
+        LOAN_REQUEST_API_ENDPOINT:
+          !FindInMap [EnvVars, !Ref EnvironmentType, loanrequestapiendpoint]
+        RULES_ENGINE_ENDPOINT:
+          !FindInMap [EnvVars, !Ref EnvironmentType, rulesengineendpoint]
+        RULES_ENGINE_SECRET_ID: "internal-tools/rules-engine"
+        EVENT_BUS_NAME:
+          !Join [
+            "",
+            [vana, !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"]],
+          ]
+        INTERNAL_TOOLS_SETTINGS_TABLE:
+          !Join [
+            "",
+            [
+              internal_tools_settings,
+              !If [ProdEnvironment, "", !Sub "_${EnvironmentType}"],
+            ],
+          ]
+        GET_INTERNAL_USER_FUNCTION:
+          !Join [
+            "",
+            [
+              internal-user-role-get-user,
+              !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+            ],
+          ]
+        LOAN_REQUEST_READ_FUNCTION:
+          !Join [
+            "",
+            [
+              loan-request-read,
+              !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+            ],
+          ]
+        LOAN_REQUEST_STATUS_UPDATE_FUNCTION:
+          !Join [
+            "",
+            [
+              loan-request-update-status,
+              !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+            ],
+          ]
+        LOAN_DETAIL_READ_FUNCTION:
+          !Join [
+            "",
+            [
+              internal-loan-get-loan-detail,
+              !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+            ],
+          ]
+        USER_READ_FUNCTION:
+          !Join [
+            "",
+            [
+              user-lite-read,
+              !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+            ],
+          ]
+        USER_SEARCH_FUNCTION:
+          !Join [
+            "",
+            [
+              user-search,
+              !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+            ],
+          ]
+        USER_UPDATE_FUNCTION:
+          !Join [
+            "",
+            [
+              user-update-properties,
+              !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+            ],
+          ]
+        COLLECTION_ANNOTATION_CREATE_FUNCTION:
+          !Join [
+            "",
+            [
+              collection-annotation-create,
+              !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+            ],
+          ]
+        USER_INFORMATION_FUNCTION:
+          !Join [
+            "",
+            [
+              internal-user-get-information,
+              !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+            ],
+          ]
+        USER_INFORMATION_FUNCTION_RETRIES: 3
+        DOCUMENT_ANALYSIS_READ_FUNCTION:
+          !Join [
+            "",
+            [
+              internal-document-analyzer-read,
+              !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+            ],
+          ]
+        DOCUMENT_ANALYSIS_IMAGE_TEXT_ANALYZER_FUNCTION:
+          !Join [
+            "",
+            [
+              internal-document-analyzer-text-image,
+              !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+            ],
+          ]
+        EXTRACT_IMAGE_TEXT_FUNCTION:
+          !Join [
+            "",
+            [
+              extract-image-text,
+              !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+            ],
+          ]
+        EXTRACT_IMAGE_SIGNATURES_FUNCTION:
+          !Join [
+            "",
+            [
+              get-signature-from-image,
+              !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+            ],
+          ]
+        IMD_TABLE:
+          !Join [
+            "",
+            [
+              internal_metadata,
+              !If [ProdEnvironment, "", !Sub "_${EnvironmentType}"],
+            ],
+          ]
+        USER_READ_METADATA_FUNCTION:
+          !Join [
+            "",
+            [
+              internal-user-read-metadata,
+              !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+            ],
+          ]
+        USER_UPDATE_THIRD_PARTY_SERVICES_FUNCTION:
+          !Join [
+            "",
+            [
+              internal-user-update-third-party-services-information,
+              !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+            ],
+          ]
+        FACE_COMPARISON_FUNCTION:
+          !Join [
+            "",
+            [
+              face-comparison,
+              !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+            ],
+          ]
+        REASSIGN_SAME_AGENT_CALL_QUEUE: "true"
+        USER_API_KEY: !Sub "{{resolve:secretsmanager:internal-tools/user-api:SecretString}}"
+        USER_API_ENDPOINT:
+          !FindInMap [EnvVars, !Ref EnvironmentType, userapiendpoint]
+        FDT_ENDPOINT: !FindInMap [EnvVars, !Ref EnvironmentType, fdtEndPoint]
+        FDT_API_KEY: !Sub "{{resolve:secretsmanager:internal-tools/fdt-api-key:SecretString}}"
+        AUTOMATED_APPROVALS_SOURCES: "vana_android_app"
+        CUSTOMER_IO_DOCUMENT_REJECTED_EVENT_NAME: "InternalLoanRequest.DocumentRejected"
+        LISTO_API_URL:
+          !FindInMap [EnvVars, !Ref EnvironmentType, listoPrivateUrl]
+        LISTO_PAYMENT_API_KEY: !Sub "{{resolve:secretsmanager:internal-tools/listo:SecretString:PAYMENT_API_KEY}}"
+        LISTO_RESOURCES_BUCKET:
+          !Join [
+            "",
+            [
+              "listo-resources",
+              !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+            ],
+          ]
+        LISTO_STATEMENT_PAYMENT_FOLDER: "statement-payments" # is used as array separator |
+        CREDIT_RESOURCES_BUCKET:
+          !Join [
+            "",
+            [
+              "vana-payments",
+              !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+            ],
+          ]
+        INTERNAL_PAYMENT_READ_FUNCTION:
+          !Join [
+            "",
+            [
+              internal-payment-read,
+              !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+            ],
+          ]
+        CREATE_TICKET_PAYMENT_ENABLED: "true"
+
+    Tags:
+      env: !Ref EnvironmentType
+      service: "internal-tickets"
+      version: "1.0.0"
+      team: "internal-tools"
+
+Resources:
+  LambdaExecutionRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: "sts:AssumeRole"
+      Path: "/"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:*
+                Resource: arn:aws:logs:*:*:*
+              - Effect: Allow
+                Action:
+                  - "dynamodb:Query"
+                  - "dynamodb:Scan"
+                  - "dynamodb:BatchGetItem"
+                  - "dynamodb:GetItem"
+                  - "dynamodb:PutItem"
+                  - "dynamodb:UpdateItem"
+                  - "dynamodb:DeleteItem"
+                Resource:
+                  - !GetAtt [CostumerTicketsRecordsTable, Arn]
+                  - !Join [
+                      "",
+                      [!GetAtt [CostumerTicketsRecordsTable, Arn], "/*"],
+                    ]
+              - Effect: Allow
+                Action:
+                  - "dynamodb:GetItem"
+                  - "dynamodb:Query"
+                Resource:
+                  - !Join [
+                      "",
+                      [
+                        !Sub "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/internal_tools_settings",
+                        !If [ProdEnvironment, "", !Sub "_${EnvironmentType}"],
+                        "/*",
+                      ],
+                    ]
+              - Effect: Allow
+                Action:
+                  - "dynamodb:Query"
+                  - "dynamodb:Scan"
+                  - "dynamodb:GetItem"
+                  - "dynamodb:PutItem"
+                  - "dynamodb:UpdateItem"
+                Resource:
+                  - !Join [
+                      "",
+                      [
+                        !Sub "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/internal_metadata",
+                        !If [ProdEnvironment, "", !Sub "_${EnvironmentType}"],
+                        "",
+                      ],
+                    ]
+                  - !Join [
+                      "",
+                      [
+                        !Sub "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/internal_metadata",
+                        !If [ProdEnvironment, "", !Sub "_${EnvironmentType}"],
+                        "/*",
+                      ],
+                    ]
+              - Effect: Allow
+                Action:
+                  - events:PutEvents
+                Resource:
+                  - !Join [
+                      "",
+                      [
+                        !Sub "arn:${AWS::Partition}:events:${AWS::Region}:${AWS::AccountId}:event-bus/vana",
+                        !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+                      ],
+                    ]
+              - Effect: Allow
+                Action:
+                  - "secretsmanager:GetSecretValue"
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:PutObjectAcl
+                Resource:
+                  - !Join [
+                      "",
+                      [
+                        "arn:aws:s3:::",
+                        "vana-payments",
+                        !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+                        "/*",
+                      ],
+                    ]
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource:
+                  - !Join [
+                      "",
+                      [
+                        "arn:aws:s3:::",
+                        "listo-resources",
+                        !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+                        "/*",
+                      ],
+                    ]
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource:
+                  - !Join [
+                      "",
+                      [
+                        !Sub "arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:internal-user-role-get-user",
+                        !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+                      ],
+                    ]
+                  - !Join [
+                      "",
+                      [
+                        !Sub "arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:loan-request-read",
+                        !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+                      ],
+                    ]
+                  - !Join [
+                      "",
+                      [
+                        !Sub "arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:loan-request-update-status",
+                        !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+                      ],
+                    ]
+                  - !Join [
+                      "",
+                      [
+                        !Sub "arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:user-lite-read",
+                        !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+                      ],
+                    ]
+                  - !Join [
+                      "",
+                      [
+                        !Sub "arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:user-search",
+                        !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+                      ],
+                    ]
+                  - !Join [
+                      "",
+                      [
+                        !Sub "arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:user-update-properties",
+                        !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+                      ],
+                    ]
+                  - !Join [
+                      "",
+                      [
+                        !Sub "arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:collection-annotation-create",
+                        !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+                      ],
+                    ]
+                  - !Join [
+                      "",
+                      [
+                        !Sub "arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:internal-user-get-user-work-information",
+                        !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+                      ],
+                    ]
+                  - !Join [
+                      "",
+                      [
+                        !Sub "arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:internal-user-get-information",
+                        !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+                      ],
+                    ]
+                  - !Join [
+                      "",
+                      [
+                        !Sub "arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:internal-document-analyzer-read",
+                        !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+                      ],
+                    ]
+                  - !Join [
+                      "",
+                      [
+                        !Sub "arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:internal-document-analyzer-text-image",
+                        !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+                      ],
+                    ]
+                  - !Join [
+                      "",
+                      [
+                        !Sub "arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:get-signature-from-image",
+                        !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+                      ],
+                    ]
+                  - !Join [
+                      "",
+                      [
+                        !Sub "arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:extract-image-text",
+                        !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+                      ],
+                    ]
+                  - !Join [
+                      "",
+                      [
+                        !Sub "arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:internal-user-read-metadata",
+                        !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+                      ],
+                    ]
+                  - !Join [
+                      "",
+                      [
+                        !Sub "arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:internal-user-update-third-party-services-information",
+                        !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+                      ],
+                    ]
+                  - !Join [
+                      "",
+                      [
+                        !Sub "arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:face-comparison",
+                        !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+                      ],
+                    ]
+                  - !Join [
+                      "",
+                      [
+                        !Sub "arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:internal-loan-get-loan-detail",
+                        !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+                      ],
+                    ]
+                  - !Join [
+                      "",
+                      [
+                        !Sub "arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:internal-payment-read",
+                        !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+                      ],
+                    ]
+      RoleName:
+        !Join [
+          "",
+          [
+            !Sub "${ServiceName}-lambda-role",
+            !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+          ],
+        ]
+
+  ListTicketsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.listTickets
+      FunctionName:
+        !Join [
+          "",
+          [
+            "internal-tickets-list",
+            !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+          ],
+        ]
+      Role: !GetAtt [LambdaExecutionRole, Arn]
+      VpcConfig:
+        SecurityGroupIds:
+          - !FindInMap [EnvVars, !Ref EnvironmentType, securitygroupid]
+        SubnetIds:
+          - "Fn::ImportValue": !Sub "${EnvironmentType}-PrivateSubnetB"
+
+  ListTicketsVersion:
+    Type: AWS::Lambda::Version
+    Properties:
+      FunctionName:
+        Ref: ListTicketsFunction
+
+  UpdateTicketFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.updateTicket
+      FunctionName:
+        !Join [
+          "",
+          [
+            "internal-tickets-update",
+            !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+          ],
+        ]
+      Role: !GetAtt [LambdaExecutionRole, Arn]
+      VpcConfig:
+        SecurityGroupIds:
+          - !FindInMap [EnvVars, !Ref EnvironmentType, securitygroupid]
+        SubnetIds:
+          - "Fn::ImportValue": !Sub "${EnvironmentType}-PrivateSubnetB"
+
+  UpdateTicketVersion:
+    Type: AWS::Lambda::Version
+    Properties:
+      FunctionName:
+        Ref: UpdateTicketFunction
+
+  UpdateTicketBatchFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.updateTicketBatch
+      FunctionName:
+        !Join [
+          "",
+          [
+            "internal-tickets-update-batch",
+            !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+          ],
+        ]
+      Role: !GetAtt [LambdaExecutionRole, Arn]
+      VpcConfig:
+        SecurityGroupIds:
+          - !FindInMap [EnvVars, !Ref EnvironmentType, securitygroupid]
+        SubnetIds:
+          - "Fn::ImportValue": !Sub "${EnvironmentType}-PrivateSubnetB"
+
+  UpdateTicketBatchVersion:
+    Type: AWS::Lambda::Version
+    Properties:
+      FunctionName:
+        Ref: UpdateTicketBatchFunction
+
+  UpdateLoanRequestUserTicketFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.updateCheckpointsUserTicket
+      FunctionName:
+        !Join [
+          "",
+          [
+            "internal-tickets-update-information",
+            !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+          ],
+        ]
+      Role: !GetAtt [LambdaExecutionRole, Arn]
+
+  UpdateLoanRequestUserTicketVersion:
+    Type: AWS::Lambda::Version
+    Properties:
+      FunctionName:
+        Ref: UpdateLoanRequestUserTicketFunction
+
+  GetTicketRequestFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.readTicket
+      MemorySize: 512
+      FunctionName:
+        !Join [
+          "",
+          [
+            "internal-tickets-get-request",
+            !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+          ],
+        ]
+      Role: !GetAtt [LambdaExecutionRole, Arn]
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref InternalTicketsSG
+        SubnetIds:
+          - "Fn::ImportValue": !Sub "${EnvironmentType}-PrivateSubnetA"
+
+  GetTicketRequestVersion:
+    Type: AWS::Lambda::Version
+    Properties:
+      FunctionName:
+        Ref: GetTicketRequestFunction
+
+  ReadTicketEvidenceFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.readTicketEvidence
+      MemorySize: 512
+      FunctionName:
+        !Join [
+          "",
+          [
+            "internal-tickets-read-evidence",
+            !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+          ],
+        ]
+      Role: !GetAtt [LambdaExecutionRole, Arn]
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref InternalTicketsSG
+        SubnetIds:
+          - "Fn::ImportValue": !Sub "${EnvironmentType}-PrivateSubnetA"
+
+  ReadTicketEvidenceVersion:
+    Type: AWS::Lambda::Version
+    Properties:
+      FunctionName:
+        Ref: ReadTicketEvidenceFunction
+
+  # commented out for now - UPDATE_COMPLETE_CLEANUP_IN_PROGRESS stuck
+  # DecisionEngineProcessFunction:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     Handler: app.decisionEngineProcess
+  #     FunctionName:
+  #       !Join [
+  #         "",
+  #         [
+  #           "internal-tickets-decision-engine",
+  #           !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+  #         ],
+  #       ]
+  #     Role: !GetAtt [LambdaExecutionRole, Arn]
+  #     VpcConfig:
+  #       SecurityGroupIds:
+  #         - !Ref InternalTicketsSG
+  #       SubnetIds:
+  #         - "Fn::ImportValue": !Sub "${EnvironmentType}-PrivateSubnetA"
+
+  # DecisionEngineProcessVersion:
+  #   Type: AWS::Lambda::Version
+  #   Properties:
+  #     FunctionName:
+  #       Ref: DecisionEngineProcessFunction
+
+  RulesEngineProcessFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.rulesEngineProcess
+      MemorySize: 512
+      FunctionName:
+        !Join [
+          "",
+          [
+            "internal-tickets-rules-engine",
+            !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+          ],
+        ]
+      Role: !GetAtt [LambdaExecutionRole, Arn]
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref InternalTicketsSG
+        SubnetIds:
+          - "Fn::ImportValue": !Sub "${EnvironmentType}-PrivateSubnetA"
+
+  RulesEngineProcessVersion:
+    Type: AWS::Lambda::Version
+    Properties:
+      FunctionName:
+        Ref: RulesEngineProcessFunction
+
+  ConsumeEventBusFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Timeout: 120
+      MemorySize: 2048
+      Handler: app.consumeEventBus
+      FunctionName:
+        !Join [
+          "",
+          [
+            "internal-tickets-consume-events",
+            !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+          ],
+        ]
+      Role: !GetAtt [LambdaExecutionRole, Arn]
+      EventInvokeConfig:
+        MaximumEventAgeInSeconds: 3600
+        MaximumRetryAttempts: 0
+        Qualifier: LATEST
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref InternalTicketsSG
+        SubnetIds:
+          - "Fn::ImportValue": !Sub "${EnvironmentType}-PrivateSubnetA"
+      Events:
+        VanaEventBusTrigger:
+          Type: CloudWatchEvent
+          Properties:
+            EventBusName:
+              !Join [
+                "",
+                [
+                  !Sub "arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/vana",
+                  !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+                ],
+              ]
+            Pattern:
+              detail-type:
+                - LoanRequestDocument.Uploaded
+                - InternalTicket.RequestProcessed
+                - UserInformation.Processed
+                - InternalTicket.Created
+                - User.StatusUpdated
+                - LoanRequest.StatusUpdated
+                - Verification.Submitted
+                - InternalTicket.RuleEngineTicketProcessed
+                - Payment.Created
+                - PaybackIntent.Created
+                - InternalPayment.StatusUpdated
+            RetryPolicy:
+              MaximumEventAgeInSeconds: 3600
+              MaximumRetryAttempts: 0
+        IntegrationEventBusTrigger:
+          Type: CloudWatchEvent
+          Properties:
+            EventBusName:
+              !Join [
+                "",
+                [
+                  !Sub "arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/integration",
+                  !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+                ],
+              ]
+            Pattern:
+              detail-type:
+                - Listo.PaymentIntent.Fulfilled
+            RetryPolicy:
+              MaximumEventAgeInSeconds: 3600
+              MaximumRetryAttempts: 0
+
+  ConsumeEventBusVersion:
+    Type: AWS::Lambda::Version
+    Properties:
+      FunctionName:
+        Ref: ConsumeEventBusFunction
+
+  AdminListTicketsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.adminListTickets
+      FunctionName:
+        !Join [
+          "",
+          [
+            "internal-tickets-admin-list",
+            !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+          ],
+        ]
+      Role: !GetAtt [LambdaExecutionRole, Arn]
+      VpcConfig:
+        SecurityGroupIds:
+          - !FindInMap [EnvVars, !Ref EnvironmentType, securitygroupid]
+        SubnetIds:
+          - "Fn::ImportValue": !Sub "${EnvironmentType}-PrivateSubnetB"
+
+  AdminListTicketsVersion:
+    Type: AWS::Lambda::Version
+    Properties:
+      FunctionName:
+        Ref: AdminListTicketsFunction
+
+  AssignMultipleTicketsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.assignMultipleTickets
+      MemorySize: 1024
+      FunctionName:
+        !Join [
+          "",
+          [
+            "internal-tickets-assign-multiple-tickets",
+            !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+          ],
+        ]
+      Role: !GetAtt [LambdaExecutionRole, Arn]
+
+  AssignMultipleTicketsVersion:
+    Type: AWS::Lambda::Version
+    Properties:
+      FunctionName:
+        Ref: AssignMultipleTicketsFunction
+
+  TicketAutomatedProcessFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Timeout: 120
+      MemorySize: 1024
+      Handler: app.ticketAutomatedProcess
+      FunctionName:
+        !Join [
+          "",
+          [
+            "internal-tickets-automated-process",
+            !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+          ],
+        ]
+      Role: !GetAtt [LambdaExecutionRole, Arn]
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref InternalTicketsSG
+        SubnetIds:
+          - "Fn::ImportValue": !Sub "${EnvironmentType}-PrivateSubnetA"
+
+  TicketAutomatedProcessVersion:
+    Type: AWS::Lambda::Version
+    Properties:
+      FunctionName:
+        Ref: TicketAutomatedProcessFunction
+
+  # -------------------
+  # Security group
+  # -------------------
+  InternalTicketsSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId:
+        "Fn::ImportValue": !Sub "${EnvironmentType}-VPC"
+      GroupDescription: SG for Lambda function
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: "0.0.0.0/0"
+
+  CostumerTicketsRecordsTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain # Prevents the resource from being deleted if the Stack is deleted
+    Properties:
+      TableName:
+        !Join [
+          "",
+          [
+            "costumer_tickets_records",
+            !If [ProdEnvironment, "", !Sub "_${EnvironmentType}"],
+          ],
+        ]
+      BillingMode: PAY_PER_REQUEST
+      DeletionProtectionEnabled: true # Prevents the table from being accidentally deleted
+      SSESpecification:
+        SSEEnabled: true
+      AttributeDefinitions:
+        - AttributeName: pk
+          AttributeType: S
+        - AttributeName: sk
+          AttributeType: S
+        - AttributeName: user
+          AttributeType: S
+        - AttributeName: status
+          AttributeType: S
+        - AttributeName: updated_at
+          AttributeType: S
+        - AttributeName: decision_source
+          AttributeType: S
+        - AttributeName: ticket_status
+          AttributeType: S
+        - AttributeName: type
+          AttributeType: S
+        - AttributeName: search
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: sk_index
+          KeySchema:
+            - AttributeName: sk
+              KeyType: HASH
+            - AttributeName: updated_at
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: user_index
+          KeySchema:
+            - AttributeName: user
+              KeyType: HASH
+            - AttributeName: updated_at
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: user_status_index
+          KeySchema:
+            - AttributeName: user
+              KeyType: HASH
+            - AttributeName: status
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: status_index
+          KeySchema:
+            - AttributeName: status
+              KeyType: HASH
+            - AttributeName: updated_at
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: ticket_status_index
+          KeySchema:
+            - AttributeName: ticket_status
+              KeyType: HASH
+            - AttributeName: decision_source
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: type_sk_index
+          KeySchema:
+            - AttributeName: type
+              KeyType: HASH
+            - AttributeName: sk
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: search_index
+          KeySchema:
+            - AttributeName: search
+              KeyType: HASH
+            - AttributeName: updated_at
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+
+Outputs:
+  CostumerTicketsRecordsTableDynamoDBStreamArn:
+    Description: "Costumer tickets records table DynamoDB Stream ARN"
+    Value: !GetAtt CostumerTicketsRecordsTable.StreamArn
+    Export:
+      Name:
+        !Join [
+          "",
+          [
+            "costumer-tickets-records",
+            !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+            "-dynamodb-stream-arn",
+          ],
+        ]
+
+  TicketAutomatedProcessFunctionArn:
+    Description: "Ticket automated function ARN"
+    Value: !GetAtt [TicketAutomatedProcessFunction, Arn]
+    Export:
+      Name:
+        !Join [
+          "",
+          [
+            "internal-tickets-automated-process",
+            !If [ProdEnvironment, "", !Sub "-${EnvironmentType}"],
+            "-arn",
+          ],
+        ]
