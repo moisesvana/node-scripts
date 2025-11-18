@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { OpenSearchClient } from "./opensearch-client.js";
 
 dotenv.config();
 
@@ -126,6 +127,18 @@ const TYPE_VALUE = "TICKET_PAYMENT";
 const START_DATE = process.env.START_DATE || "";
 const END_DATE = process.env.END_DATE || "";
 
+const nodeName = process.env.OPENSEARCH_NODE;
+const username = process.env.OPENSEARCH_USERNAME;
+const password = process.env.OPENSEARCH_PASSWORD;
+const indexName = process.env.OPENSEARCH_INDEX_NAME || "stm_payment_dev";
+
+const secrets = {
+  username: username,
+  password: password,
+};
+console.log("secrets :>> ", JSON.stringify(secrets));
+const openSearchClient = new OpenSearchClient(nodeName, secrets);
+
 console.log("START_DATE :>> ", START_DATE);
 console.log("END_DATE :>> ", END_DATE);
 
@@ -189,6 +202,7 @@ async function init() {
           console.log(`Type: ${item.type}`);
 
           console.log(`Updated At: ${item.updated_at}`);
+          console.log(`Created At: ${item.created_at}`);
 
           // Verificar si el status es pending
           if (item.status === "pending") {
@@ -196,58 +210,101 @@ async function init() {
             console.log(
               `✅ Item con status PENDING encontrado (Total pending: ${pendingCount})`
             );
+            const paymentId = item.pk.split("|")[1];
+            console.log("paymentId :>> ", paymentId);
+            let opStatus = null;
+            try {
+              const res = await openSearchClient.search({
+                index: indexName,
+                queryInput: {
+                  query: {
+                    bool: {
+                      should: [
+                        {
+                          term: {
+                            "remote_id.keyword": paymentId,
+                          },
+                        },
+                        {
+                          term: {
+                            "shadow_id.keyword": paymentId,
+                          },
+                        },
+                        {
+                          term: {
+                            "intent_id.keyword": paymentId,
+                          },
+                        },
+                      ],
+                      minimum_should_match: 1,
+                    },
+                  },
+                  track_total_hits: true,
+                },
+              });
+
+              const items = res.items;
+              console.log("items", items.length);
+              //console.log(" item :>> ", JSON.stringify(items?.[0]));
+              opStatus = items?.[0]?.intent_status;
+              console.log("STATUS OPENSEARCH :>> ", opStatus);
+            } catch (error) {
+              console.log("error :>> ", error);
+            }
 
             // Actualizar el status a completed
-            try {
-              const updateParams = {
-                TableName: TABLE_NAME,
-                Key: {
+            if (opStatus === "fulfilled") {
+              try {
+                const updateParams = {
+                  TableName: TABLE_NAME,
+                  Key: {
+                    pk: item.pk,
+                  },
+                  UpdateExpression:
+                    "SET #status = :completed, #updated_at = :now",
+                  ExpressionAttributeNames: {
+                    "#status": "status",
+                    "#updated_at": "updated_at",
+                  },
+                  ExpressionAttributeValues: {
+                    ":completed": "completed",
+                    ":now": new Date().toISOString(),
+                  },
+                  ConditionExpression: "#status = :pending", // Solo actualizar si sigue siendo pending
+                  ExpressionAttributeValues: {
+                    ":completed": "completed",
+                    ":pending": "pending",
+                    ":now": new Date().toISOString(),
+                  },
+                  ReturnValues: "ALL_NEW",
+                };
+
+                const result = await dynamodb.update(updateParams).promise();
+                updatedCount++;
+
+                console.log(
+                  `🎉 Status actualizado exitosamente: pending → completed`
+                );
+                console.log(
+                  `🕐 Nuevo updated_at: ${result.Attributes.updated_at}`
+                );
+
+                successfulItems.push({
                   pk: item.pk,
-                },
-                UpdateExpression:
-                  "SET #status = :completed, #updated_at = :now",
-                ExpressionAttributeNames: {
-                  "#status": "status",
-                  "#updated_at": "updated_at",
-                },
-                ExpressionAttributeValues: {
-                  ":completed": "completed",
-                  ":now": new Date().toISOString(),
-                },
-                ConditionExpression: "#status = :pending", // Solo actualizar si sigue siendo pending
-                ExpressionAttributeValues: {
-                  ":completed": "completed",
-                  ":pending": "pending",
-                  ":now": new Date().toISOString(),
-                },
-                ReturnValues: "ALL_NEW",
-              };
-
-              const result = await dynamodb.update(updateParams).promise();
-              updatedCount++;
-
-              console.log(
-                `🎉 Status actualizado exitosamente: pending → completed`
-              );
-              console.log(
-                `🕐 Nuevo updated_at: ${result.Attributes.updated_at}`
-              );
-
-              successfulItems.push({
-                pk: item.pk,
-                sk: item.sk,
-                oldStatus: "pending",
-                newStatus: "completed",
-                updatedAt: result.Attributes.updated_at,
-                props: item.props,
-              });
-            } catch (updateError) {
-              console.error(
-                `❌ Error actualizando item ${item.pk}:`,
-                updateError.message
-              );
-              await saveFailedItem(item, updateError, failedItems);
-              failedCount++;
+                  sk: item.sk,
+                  oldStatus: "pending",
+                  newStatus: "completed",
+                  updatedAt: result.Attributes.updated_at,
+                  props: item.props,
+                });
+              } catch (updateError) {
+                console.error(
+                  `❌ Error actualizando item ${item.pk}:`,
+                  updateError.message
+                );
+                await saveFailedItem(item, updateError, failedItems);
+                failedCount++;
+              }
             }
           } else {
             skippedCount++;
