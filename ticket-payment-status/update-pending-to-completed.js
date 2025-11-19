@@ -213,44 +213,44 @@ async function init() {
             const paymentId = item.pk.split("|")[1];
             console.log("paymentId :>> ", paymentId);
             let opStatus = null;
-            try {
-              const res = await openSearchClient.search({
-                index: indexName,
-                queryInput: {
-                  query: {
-                    bool: {
-                      should: [
-                        {
-                          term: {
-                            "remote_id.keyword": paymentId,
-                          },
-                        },
-                        {
-                          term: {
-                            "shadow_id.keyword": paymentId,
-                          },
-                        },
-                        {
-                          term: {
-                            "intent_id.keyword": paymentId,
-                          },
-                        },
-                      ],
-                      minimum_should_match: 1,
-                    },
-                  },
-                  track_total_hits: true,
-                },
-              });
+            // try {
+            //   const res = await openSearchClient.search({
+            //     index: indexName,
+            //     queryInput: {
+            //       query: {
+            //         bool: {
+            //           should: [
+            //             {
+            //               term: {
+            //                 "remote_id.keyword": paymentId,
+            //               },
+            //             },
+            //             {
+            //               term: {
+            //                 "shadow_id.keyword": paymentId,
+            //               },
+            //             },
+            //             {
+            //               term: {
+            //                 "intent_id.keyword": paymentId,
+            //               },
+            //             },
+            //           ],
+            //           minimum_should_match: 1,
+            //         },
+            //       },
+            //       track_total_hits: true,
+            //     },
+            //   });
 
-              const items = res.items;
-              console.log("items", items.length);
-              //console.log(" item :>> ", JSON.stringify(items?.[0]));
-              opStatus = items?.[0]?.intent_status;
-              console.log("STATUS OPENSEARCH :>> ", opStatus);
-            } catch (error) {
-              console.log("error :>> ", error);
-            }
+            //   const items = res.items;
+            //   console.log("items", items.length);
+            //   //console.log(" item :>> ", JSON.stringify(items?.[0]));
+            //   opStatus = items?.[0]?.intent_status;
+            //   console.log("STATUS OPENSEARCH :>> ", opStatus);
+            // } catch (error) {
+            //   console.log("error :>> ", error);
+            // }
 
             // Actualizar el status a completed
             if (opStatus === "fulfilled") {
