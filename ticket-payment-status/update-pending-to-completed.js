@@ -196,16 +196,13 @@ async function init() {
           console.log("\n");
           console.log("----------------------------------------");
           console.log(`📋 Procesando item ${totalCount}`);
-          console.log(`PK: ${item.pk}`);
-          console.log(`SK: ${item.sk}`);
-          console.log(`Status actual: ${item.status}`);
-          console.log(`Type: ${item.type}`);
-
-          console.log(`Updated At: ${item.updated_at}`);
-          console.log(`Created At: ${item.created_at}`);
 
           // Verificar si el status es pending
           if (item.status === "pending") {
+            console.log(`PK: ${item.pk}`);
+            console.log(`SK: ${item.sk}`);
+            console.log(`Updated At: ${item.updated_at}`);
+            console.log(`Created At: ${item.created_at}`);
             pendingCount++;
             console.log(
               `✅ Item con status PENDING encontrado (Total pending: ${pendingCount})`
@@ -213,47 +210,60 @@ async function init() {
             const paymentId = item.pk.split("|")[1];
             console.log("paymentId :>> ", paymentId);
             let opStatus = null;
-            // try {
-            //   const res = await openSearchClient.search({
-            //     index: indexName,
-            //     queryInput: {
-            //       query: {
-            //         bool: {
-            //           should: [
-            //             {
-            //               term: {
-            //                 "remote_id.keyword": paymentId,
-            //               },
-            //             },
-            //             {
-            //               term: {
-            //                 "shadow_id.keyword": paymentId,
-            //               },
-            //             },
-            //             {
-            //               term: {
-            //                 "intent_id.keyword": paymentId,
-            //               },
-            //             },
-            //           ],
-            //           minimum_should_match: 1,
-            //         },
-            //       },
-            //       track_total_hits: true,
-            //     },
-            //   });
+            try {
+              const res = await openSearchClient.search({
+                index: indexName,
+                queryInput: {
+                  query: {
+                    bool: {
+                      should: [
+                        {
+                          term: {
+                            "remote_id.keyword": paymentId,
+                          },
+                        },
+                        {
+                          term: {
+                            "shadow_id.keyword": paymentId,
+                          },
+                        },
+                        {
+                          term: {
+                            "intent_id.keyword": paymentId,
+                          },
+                        },
+                      ],
+                      minimum_should_match: 1,
+                    },
+                  },
+                  track_total_hits: true,
+                },
+              });
 
-            //   const items = res.items;
-            //   console.log("items", items.length);
-            //   //console.log(" item :>> ", JSON.stringify(items?.[0]));
-            //   opStatus = items?.[0]?.intent_status;
-            //   console.log("STATUS OPENSEARCH :>> ", opStatus);
-            // } catch (error) {
-            //   console.log("error :>> ", error);
-            // }
+              const items = res.items;
+              console.log("items", items.length);
+              //console.log(" item :>> ", JSON.stringify(items?.[0]));
+              opStatus = items?.[0]?.intent_status;
+              console.log("STATUS OPENSEARCH :>> ", opStatus);
+            } catch (error) {
+              console.log("error :>> ", error);
+            }
+
+            if (!opStatus) {
+              console.log(
+                `⚠️  No se encontró el status en OpenSearch para paymentId: ${paymentId}. Omitiendo actualización.`
+              );
+              skippedCount++;
+              failedItems.push({
+                pk: item.pk,
+                sk: item.sk,
+                reason: `No se encontró el status en OpenSearch para paymentId: ${paymentId}. Omitiendo actualización.`,
+              });
+              continue;
+            }
 
             // Actualizar el status a completed
-            if (opStatus === "fulfilled") {
+            if (opStatus === "fulfilled" || opStatus === "rejected") {
               try {
                 const updateParams = {
                   TableName: TABLE_NAME,
@@ -308,7 +318,7 @@ async function init() {
             }
           } else {
             skippedCount++;
-            console.log(`⏭️  Item omitido (status: ${item.status})`);
+            console.log(`⏭️ ${item.pk} Item omitido (status: ${item.status})`);
           }
 
           console.log("----------------------------------------");
