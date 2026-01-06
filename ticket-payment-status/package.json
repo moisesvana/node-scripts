@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "node --max-old-space-size=4096 -r dotenv/config app.js",
     "get-pending": "node get-pending-payments.js",
-    "update-to-completed": "node update-pending-to-completed.js"
+    "update-to-completed": "node update-pending-to-completed.js",
+    "get-all-payments": "concurrently --prefix \"[{name}]\" --names \"diff-ticket-payment,diff-legacy-payment\" --colors \"blue,green\" \"node diff-ticket-payment.js\" \"node diff-legacy-payment.js\""
   },
   "keywords": [],
   "author": "",
@@ -16,6 +17,7 @@
   "dependencies": {
     "@opensearch-project/opensearch": "^2.13.0",
     "aws-sdk": "^2.1692.0",
+    "axios": "^1.13.2",
     "concurrently": "^9.2.1",
     "dotenv": "^17.2.2",
     "ramda": "^0.30.1",
