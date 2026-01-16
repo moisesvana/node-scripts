@@ -1,0 +1,4 @@
+# OpenSearch Configuration
+OPENSEARCH_NODE=https://your-opensearch-endpoint
+OPENSEARCH_USERNAME=your-username
+OPENSEARCH_PASSWORD=your-password
