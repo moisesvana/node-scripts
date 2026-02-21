@@ -1,0 +1,19 @@
+{
+  "name": "document-sent",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "doc-sent-ticket-close": "node doc-sent-ticket-close.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "aws-sdk": "^2.1692.0",
+    "axios": "^1.13.5",
+    "dotenv": "^16.0.0"
+  }
+}
