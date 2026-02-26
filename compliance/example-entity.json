@@ -1,0 +1,15 @@
+{
+  "pk": "USER|wHmAb8Jyt67XJ4hb7effBv|NS|compliance",
+  "sk": "USER|wHmAb8Jyt67XJ4hb7effBv",
+  "created_at": "2025-04-02T20:12:02.344654832Z",
+  "namespace": "compliance",
+  "props": {
+    "automatic_rejection": true,
+    "loan_request_id": "-OhzuJANjLjeWoaKojlP",
+    "risk_score": 32
+  },
+  "shown_id": "wHmAb8Jyt67XJ4hb7effBv|NS|compliance",
+  "type": "NAMESPACE",
+  "updated_at": "2026-01-02T18:12:54.776044284Z",
+  "user_id": "wHmAb8Jyt67XJ4hb7effBv"
+}
