@@ -13,6 +13,7 @@ AWS.config.update({ region: "us-east-1" });
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
 const LOAN_REQUEST_TABLE = process.env.LOAN_REQUEST_TABLE || "loan_request";
+const USER_STATE_TABLE = process.env.USER_STATE_TABLE || "user_state";
 const USER_INDEX = "user_index";
 const LOAN_API_TOKEN = process.env.LOAN_API_TOKEN;
 const LOAN_API_BASE_URL = "https://api.vanalms.com";
@@ -26,7 +27,7 @@ async function getUserPersonalDataFromOpenSearch(userId) {
   const response = await openSearchClient.search({
     index: "user_index",
     queryInput: {
-      _source: ["personal.id_number", "personal.country", "state.loan_review"],
+      _source: ["personal.id_number", "personal.country"],
       query: {
         term: {
           "user_id.keyword": userId,
@@ -36,12 +37,21 @@ async function getUserPersonalDataFromOpenSearch(userId) {
   });
 
   const personal = response.items?.[0]?.personal;
-  const loanView = response.items?.[0]?.state?.loan_review;
   return {
     id_number: personal?.id_number || null,
     country: personal?.country || null,
-    reviewing: loanView || null,
   };
+}
+
+async function getUserReviewingFromDynamo(userId) {
+  const params = {
+    TableName: USER_STATE_TABLE,
+    Key: { user_id: userId },
+    ProjectionExpression: "loan_review",
+  };
+
+  const result = await dynamodb.get(params).promise();
+  return result.Item?.loan_review || null;
 }
 
 async function getLoansByUserId(userId) {
@@ -107,7 +117,7 @@ function saveResultsToFile(data, filename) {
     for (const rejectionRecord of usersWithRejection) {
       const { user_id, props, created_at, updated_at } = rejectionRecord;
 
-      const [loanRequests, loans, { id_number, country, reviewing }] =
+      const [loanRequests, loans, { id_number, country }, reviewing] =
         await Promise.all([
           getLoanRequestsByUserId(user_id).catch((err) => {
             console.error(
@@ -128,7 +138,14 @@ function saveResultsToFile(data, filename) {
               `Error fetching personal data from OpenSearch for user ${user_id}:`,
               err.message,
             );
-            return { id_number: null, country: null, reviewing: null };
+            return { id_number: null, country: null };
+          }),
+          getUserReviewingFromDynamo(user_id).catch((err) => {
+            console.error(
+              `Error fetching user state from DynamoDB for user ${user_id}:`,
+              err.message,
+            );
+            return null;
           }),
         ]);
 

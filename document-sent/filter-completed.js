@@ -73,6 +73,7 @@ async function getTicketLog(verificationId) {
       `\n------------------------------ Items with status=completed (${completed.length}/${items.length}) ------------------------------`,
     );
     let fixed = 0;
+    const report = [];
     for (const ticketItem of completed) {
       const ticketLogs = await getTicketLog(ticketItem.verification_id);
       if (ticketLogs?.length) {
@@ -88,7 +89,7 @@ async function getTicketLog(verificationId) {
           `\nloan_request_id: ${ticketItem.loan_request_id} | verification_id: ${ticketItem.verification_id}`,
         );
         if (status) {
-          //console.log("status  :>> ", status);
+          console.log("status  :>> ", status);
 
           let googleId = null;
           if (ticketItem?.user) {
@@ -101,7 +102,9 @@ async function getTicketLog(verificationId) {
           const docs = await getUploadedDocs(ticketItem.user_id);
 
           for (const doc of docs) {
-            console.log("id:", doc.id);
+            const newImagStatus =
+              status === "approve" ? "approved" : "rejected";
+            console.log(`id: ${doc.id}, status: ${doc.status}`);
             await axios.patch(
               `https://storage.api.vana-private.com/v1/users/${ticketItem.user_id}/blobs`,
               {
@@ -109,7 +112,7 @@ async function getTicketLog(verificationId) {
                   updates: [
                     {
                       id: doc.id,
-                      status: status === "approve" ? "approved" : "rejected", // internal-tools status = approve,
+                      status: newImagStatus, // internal-tools status = approve,
                       //status: "rejected", // internal-tools status = approve,
                     },
                   ],
@@ -122,7 +125,7 @@ async function getTicketLog(verificationId) {
                 },
               },
             );
-            console.log("blob updated:", doc.id);
+            console.log("blob updated:", doc.id, "to status:", newImagStatus);
           }
 
           //rechazar verification
@@ -212,10 +215,14 @@ async function getTicketLog(verificationId) {
             })
             .promise();
 
-          console.log(
-            "lambdaResponse :>> ",
-            JSON.parse(lambdaResponse.Payload),
-          );
+          //const lambdaPayload = JSON.parse(lambdaResponse.Payload);
+          //console.log("lambdaResponse :>> ", lambdaPayload);
+
+          report.push({
+            ...consumeEventPayload,
+            user_id: ticketItem.user_id,
+            res: lambdaResponse,
+          });
           fixed++;
         } else {
           console.log("status  :>> Not found");
@@ -225,6 +232,9 @@ async function getTicketLog(verificationId) {
       }
     }
 
+    const reportFile = `logs/report-${Date.now()}.json`;
+    fs.writeFileSync(reportFile, JSON.stringify(report, null, 2));
+    console.log(`Report saved to ${reportFile} (${report.length} events)`);
     console.log("fixed", fixed);
     console.log("\nDone.");
   } catch (err) {
