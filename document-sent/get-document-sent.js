@@ -11,6 +11,12 @@ const dynamodb = new AWS.DynamoDB.DocumentClient();
 const LOAN_REQUEST_STATE_TABLE = process.env.LOAN_REQUEST_STATE_TABLE;
 const CUSTOMER_TICKETS_TABLE = process.env.CUSTOMER_TICKETS_TABLE;
 
+/**
+ *
+ * 1. validar falsos positivos por proceso automatico - document_sent y ticket created
+ * 2. validar falsos positivos cuando estan en document_sent pero el ticket ya esta en completed y envia otro ticket durante el proceso de ejecucion.
+ */
+
 async function getLoanRequestIdsInDocumentSent() {
   console.log(
     "\n------------------------------ Getting loan requests in document_sent -------------------------",
