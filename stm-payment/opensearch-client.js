@@ -91,6 +91,24 @@ export class OpenSearchClient {
       result: updateResult?.body?.result,
     };
   }
+
+  async updateDocument(input) {
+    const { index, id, doc } = input;
+
+    await this.setClient();
+    const updateResult = await this.client.update({
+      index: index,
+      id: id,
+      body: {
+        doc: doc,
+      },
+    });
+
+    return {
+      success: updateResult?.body?.result === "updated" || updateResult?.body?.result === "noop",
+      result: updateResult?.body?.result,
+    };
+  }
 }
 
 const formatAggregations = (aggs) => {
