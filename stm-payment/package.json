@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node --max-old-space-size=4096 -r dotenv/config app.js"
+    "dev": "node --max-old-space-size=4096 -r dotenv/config app.js",
+    "payment-source": "node --max-old-space-size=4096 stm-payment-add-source-prop.js",
+    "statement-source": "node --max-old-space-size=4096 stm-statement-add-source-prop.js"
   },
   "keywords": [],
   "author": "",

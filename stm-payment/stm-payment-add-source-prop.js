@@ -11,28 +11,28 @@ AWS.config.update({ region: "us-east-1" });
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
-const TABLE_NAME =
-  process.env.STM_PAYMENT_TABLE || "statement_payment_records_dev";
+const TABLE_NAME = process.env.STM_PAYMENT_TABLE || "statement_payment_records";
 const INDEX_NAME = "search_subsearch_index";
-const STM_STATEMENT_INDEX_NAME =
-  process.env.STM_STATEMENT_INDEX_NAME || "stm_statement_dev";
+const STM_PAYMENT_INDEX_NAME =
+  process.env.STM_PAYMENT_INDEX_NAME || "stm_payment_dev";
 const UPDATE_BATCH_SIZE = 10;
-const SWIFT_CODE = process.argv[2];
-if (!SWIFT_CODE) {
-  console.error("Usage: node stm-statement-add-source-prop.js <SWIFT_CODE>");
+const MONTH = process.argv[2];
+if (!MONTH) {
+  console.error("Usage: node stm-payment-add-source-prop.js <YYYY-MM>");
   process.exit(1);
 }
+const SEARCH_VALUE = `ORG|vana|MONTH|${MONTH}`;
 
 const openSearchClient = new OpenSearchClient(process.env.OPENSEARCH_NODE, {
   username: process.env.OPENSEARCH_USERNAME,
   password: process.env.OPENSEARCH_PASSWORD,
 });
 
-console.log("TABLE_NAME", TABLE_NAME);
+console.log(TABLE_NAME);
 
 const failedUpdates = [];
 
-async function queryByDate(searchValue) {
+async function queryPayments() {
   let lastEvaluatedKey = undefined;
   let count = 0;
 
@@ -47,8 +47,8 @@ async function queryByDate(searchValue) {
         "#type": "type",
       },
       ExpressionAttributeValues: {
-        ":searchValue": searchValue,
-        ":typeValue": "STATEMENT",
+        ":searchValue": SEARCH_VALUE,
+        ":typeValue": "PAYMENT",
       },
       ExclusiveStartKey: lastEvaluatedKey,
     };
@@ -61,17 +61,17 @@ async function queryByDate(searchValue) {
 
         const results = await Promise.allSettled(
           batch.map((item) => {
-            const statementId = item.shown_id;
+            const intentId = item?.props?.intent_id;
             const source = item?.source?.split("|")?.[3] || "";
             return openSearchClient
               .updateDocument({
-                index: STM_STATEMENT_INDEX_NAME,
-                id: statementId,
+                index: STM_PAYMENT_INDEX_NAME,
+                id: intentId,
                 doc: { source },
               })
-              .then(() => ({ statementId, source, ok: true }))
+              .then(() => ({ intentId, source, ok: true }))
               .catch((err) => ({
-                statementId,
+                intentId,
                 source,
                 ok: false,
                 error: err.message,
@@ -80,14 +80,12 @@ async function queryByDate(searchValue) {
         );
 
         for (const r of results) {
-          const { statementId, source, ok, error } = r.value;
+          const { intentId, source, ok, error } = r.value;
           if (ok) {
-            console.log(
-              `statementId: ${statementId} | source: ${source} | updated`,
-            );
+            console.log(`intentId: ${intentId} | source: ${source} | updated`);
           } else {
-            console.error(`statementId: ${statementId} | error: ${error}`);
-            failedUpdates.push({ statementId, source, error });
+            console.error(`intentId: ${intentId} | error: ${error}`);
+            failedUpdates.push({ intentId, source, error });
           }
         }
 
@@ -96,7 +94,7 @@ async function queryByDate(searchValue) {
 
       lastEvaluatedKey = data.LastEvaluatedKey;
     } catch (err) {
-      console.error(`Error querying DynamoDB for ${searchValue}:`, err);
+      console.error(`Error querying DynamoDB for ${SEARCH_VALUE}:`, err);
       break;
     }
   } while (lastEvaluatedKey);
@@ -105,24 +103,14 @@ async function queryByDate(searchValue) {
 }
 
 async function init() {
-  let totalCount = 0;
-
-  console.log("Querying statements...");
+  console.log("Querying payments...");
+  console.log(`Search: ${SEARCH_VALUE}`);
   console.log("----------------------------------------");
 
-  for (let day = 1; day <= 31; day++) {
-    const date = `2026-02-${String(day).padStart(2, "0")}`;
-    const searchValue = `ORG|vana|BANK|${SWIFT_CODE}|DATE|${date}`;
-    console.log(`\nSearching: ${searchValue}`);
-
-    const count = await queryByDate(searchValue);
-    totalCount += count;
-
-    console.log(`Date ${date}: ${count} statements found`);
-  }
+  const totalCount = await queryPayments();
 
   console.log("----------------------------------------");
-  console.log(`Done. Total statements found: ${totalCount}`);
+  console.log(`Done. Total payments found: ${totalCount}`);
   console.log(`Failed updates: ${failedUpdates.length}`);
 
   if (failedUpdates.length > 0) {
@@ -132,7 +120,7 @@ async function init() {
 
     const filePath = path.join(
       failsDir,
-      `failed-source-updates-${timestamp}.json`,
+      `failed-payment-source-updates-${timestamp}.json`,
     );
     fs.writeFileSync(filePath, JSON.stringify(failedUpdates, null, 2));
     console.log(`Failed updates saved to: ${filePath}`);
