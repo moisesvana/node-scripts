@@ -52,12 +52,22 @@ async function getLoanRequestIdsInDocumentSent() {
   return loanRequestIds;
 }
 
+async function getLoanRequestCurrentStatus(loanRequestId) {
+  const params = {
+    TableName: LOAN_REQUEST_STATE_TABLE,
+    Key: { loan_request_id: loanRequestId },
+  };
+  const result = await dynamodb.get(params).promise();
+  return result.Item?.status || null;
+}
+
 async function checkIfTicketIsCompleted(loanRequestIds) {
   console.log(
     "\n------------------------------ Check which tickets are with status completed -------------------------",
   );
 
   const ticketsToReview = [];
+  const processedCorrectly = [];
 
   for (const loanRequestId of loanRequestIds) {
     const searchKey = `IDENT|${loanRequestId}`;
@@ -101,6 +111,22 @@ async function checkIfTicketIsCompleted(loanRequestIds) {
     }
 
     if (ticketToReview) {
+      const currentLoanStatus =
+        await getLoanRequestCurrentStatus(loanRequestId);
+
+      if (currentLoanStatus !== "document_sent") {
+        console.log(
+          `  [OK] loan_request_id: ${loanRequestId} already moved to '${currentLoanStatus}' — skipping (processed correctly)`,
+        );
+        processedCorrectly.push({
+          loan_request_id: loanRequestId,
+          current_loan_status: currentLoanStatus,
+          tickets_counter: ticketsCounter,
+          tickets,
+        });
+        continue;
+      }
+
       ticketsToReview.push({
         loan_request_id: loanRequestId,
         tickets_counter: ticketsCounter,
@@ -118,7 +144,8 @@ async function checkIfTicketIsCompleted(loanRequestIds) {
   }
 
   console.log(`Found ${ticketsToReview.length} to fix`);
-  return ticketsToReview;
+  console.log(`Found ${processedCorrectly.length} already processed correctly`);
+  return { ticketsToReview, processedCorrectly };
 }
 
 function saveResultsToFile(data, filename) {
@@ -136,12 +163,17 @@ function saveResultsToFile(data, filename) {
 (async () => {
   try {
     const loanRequestsInDocumentSent = await getLoanRequestIdsInDocumentSent();
-    const ticketsToReview = await checkIfTicketIsCompleted(
-      loanRequestsInDocumentSent,
-    );
+    const { ticketsToReview, processedCorrectly } =
+      await checkIfTicketIsCompleted(loanRequestsInDocumentSent);
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     saveResultsToFile(ticketsToReview, `ticket_to_review-${timestamp}.json`);
+    if (processedCorrectly.length > 0) {
+      saveResultsToFile(
+        processedCorrectly,
+        `processed_correctly-${timestamp}.json`,
+      );
+    }
 
     console.log("\nScript completed successfully.");
   } catch (err) {
