@@ -1,0 +1,170 @@
+[
+  {
+    "loan_request_id": "-OQ-gVMmkQ7NhY4YOV7l",
+    "user_id": "gFL1Y98cxipvha1NkDjQRU",
+    "loan_requests": [
+      {
+        "loan_request_id": "-OQ-gVMmkQ7NhY4YOV7l",
+        "status": "archived",
+        "created_at": "2025-05-11T18:53:37.310Z",
+        "updated_at": "2026-05-05T18:11:35.115Z"
+      }
+    ]
+  },
+  {
+    "loan_request_id": "-OQFBjHx0B_G4kmOqJSE",
+    "user_id": "3pqXa8oQP6S3NhVKmLnsNo",
+    "loan_requests": [
+      {
+        "loan_request_id": "-OQFBjHx0B_G4kmOqJSE",
+        "status": "archived",
+        "created_at": "2025-05-14T19:08:52.568Z",
+        "updated_at": "2026-05-05T18:11:35.476Z"
+      }
+    ]
+  },
+  {
+    "loan_request_id": "-OPDlLlR3DtsgWjayKvK",
+    "user_id": "6KM9Fcq7yDdm2fuBSz5rqT",
+    "loan_requests": [
+      {
+        "loan_request_id": "-OPDlLlR3DtsgWjayKvK",
+        "status": "archived",
+        "created_at": "2025-05-02T02:13:46.641Z",
+        "updated_at": "2026-05-05T18:11:33.686Z"
+      }
+    ]
+  },
+  {
+    "loan_request_id": "-OPI-PUxGXKjMgl4eEGx",
+    "user_id": "sRw7xbsR6ohrDzvqY3zSkb",
+    "loan_requests": [
+      {
+        "loan_request_id": "-OPI-PUxGXKjMgl4eEGx",
+        "status": "archived",
+        "created_at": "2025-05-02T21:58:03.733Z",
+        "updated_at": "2026-05-05T18:11:34.058Z"
+      }
+    ]
+  },
+  {
+    "loan_request_id": "-OQlmJHds4naQ7hKvxbx",
+    "user_id": "puFktodEDFvb7A9us4C8yJ",
+    "loan_requests": [
+      {
+        "loan_request_id": "-OQlmJHds4naQ7hKvxbx",
+        "status": "archived",
+        "created_at": "2025-05-21T07:40:23.846Z",
+        "updated_at": "2026-05-05T18:11:35.630Z"
+      }
+    ]
+  },
+  {
+    "loan_request_id": "-OQ0LkEtzMyoIIshPbWU",
+    "user_id": "fLLEFPnecfM8m7MYJgdvf3",
+    "loan_requests": [
+      {
+        "loan_request_id": "-OQ0LkEtzMyoIIshPbWU",
+        "status": "archived",
+        "created_at": "2025-05-11T21:58:10.733Z",
+        "updated_at": "2026-05-05T18:11:35.267Z"
+      }
+    ]
+  },
+  {
+    "loan_request_id": "-OPWnwIZalaGxbGS_lHq",
+    "user_id": "IA2czQrKFTUt49TirjrBPjD7A4v2",
+    "loan_requests": [
+      {
+        "loan_request_id": "-OPWnwIZalaGxbGS_lHq",
+        "status": "archived",
+        "created_at": "2025-05-05T18:57:59.910Z",
+        "updated_at": "2026-05-05T18:11:34.416Z"
+      }
+    ]
+  },
+  {
+    "loan_request_id": "-OPl2ZK_66T24iy03PpX",
+    "user_id": "wdG3fiyLvk3uAJHwJNmx6A",
+    "loan_requests": [
+      {
+        "loan_request_id": "-OPl2ZK_66T24iy03PpX",
+        "status": "archived",
+        "created_at": "2025-05-08T18:00:25.650Z",
+        "updated_at": "2026-05-05T18:11:34.764Z"
+      }
+    ]
+  },
+  {
+    "loan_request_id": "-OMrVyEe_HnY_8NG7Q3M",
+    "user_id": "9Y4nz6jVEGu5GFFQLCHkZn",
+    "loan_requests": [
+      {
+        "loan_request_id": "-OMrVyEe_HnY_8NG7Q3M",
+        "status": "archived",
+        "created_at": "2025-04-02T17:19:32.935Z",
+        "updated_at": "2026-05-05T18:11:31.360Z"
+      }
+    ]
+  },
+  {
+    "loan_request_id": "-OPwzM9DQqn-Cq0pcztm",
+    "user_id": "eG8TcdnczdwVSpkcpB2ezq",
+    "loan_requests": [
+      {
+        "loan_request_id": "-OPwzM9DQqn-Cq0pcztm",
+        "status": "archived",
+        "created_at": "2025-05-11T01:37:30.481Z",
+        "updated_at": "2026-05-05T18:11:34.933Z"
+      }
+    ]
+  },
+  {
+    "loan_request_id": "-OOYEc4YgNqmTHCsKx33",
+    "user_id": "8hnnc1K2XLE1MMRzo7hG6S",
+    "loan_requests": [
+      {
+        "loan_request_id": "-OOYEc4YgNqmTHCsKx33",
+        "status": "archived",
+        "created_at": "2025-04-23T15:22:43.930Z",
+        "updated_at": "2026-05-05T18:11:31.758Z"
+      }
+    ]
+  },
+  {
+    "loan_request_id": "-OPdcykFPzvUhb4R-LEO",
+    "user_id": "bJikrKf2hra5anhL9bjQex",
+    "loan_requests": [
+      {
+        "loan_request_id": "-OPdcykFPzvUhb4R-LEO",
+        "status": "archived",
+        "created_at": "2025-05-07T07:26:57.404Z",
+        "updated_at": "2026-05-05T18:11:34.615Z"
+      }
+    ]
+  },
+  {
+    "loan_request_id": "-OPLmeXXAItPDlJ-TkEw",
+    "user_id": "iWrSdrbhUtDjge4LdXx6hw",
+    "loan_requests": [
+      {
+        "loan_request_id": "-OPLmeXXAItPDlJ-TkEw",
+        "status": "archived",
+        "created_at": "2025-05-03T15:36:28.067Z",
+        "updated_at": "2026-05-05T18:11:34.224Z"
+      }
+    ]
+  },
+  {
+    "loan_request_id": "-OOZlyDe_gBhb32fJnDA",
+    "user_id": "kfgE8xhuyAaoMkybhKKPtE",
+    "loan_requests": [
+      {
+        "loan_request_id": "-OOZlyDe_gBhb32fJnDA",
+        "status": "archived",
+        "created_at": "2025-04-23T22:32:24.618Z",
+        "updated_at": "2026-05-05T18:11:31.976Z"
+      }
+    ]
+  }
+]

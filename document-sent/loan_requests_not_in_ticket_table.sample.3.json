@@ -1,0 +1,212 @@
+[
+  {
+    "loan_request_id": "-OPWevQuxB364a9rD4qG",
+    "user_id": "6Hm9QUSyrVmjDDjFyoAc9n",
+    "loan_requests": [
+      {
+        "loan_request_id": "-OPWevQuxB364a9rD4qG",
+        "status": "reviewing",
+        "created_at": "2025-05-05T18:18:29.058Z",
+        "updated_at": "2025-05-05T18:18:29.058Z"
+      },
+      {
+        "loan_request_id": "-Nyd9SGM6SUSJFzvDiSb",
+        "status": "rejected",
+        "created_at": "2024-05-24T05:54:03.409Z",
+        "updated_at": "2024-05-24T05:54:03.409Z"
+      }
+    ]
+  },
+  {
+    "loan_request_id": "-OQ8K02rbxKDVQLq76zr",
+    "user_id": "gRPBJZKxZ8f5hZ6LDYv3rM",
+    "loan_requests": [
+      {
+        "loan_request_id": "-OQ8K02rbxKDVQLq76zr",
+        "status": "reviewing",
+        "created_at": "2025-05-13T11:07:33.574Z",
+        "updated_at": "2025-05-13T11:07:33.574Z"
+      },
+      {
+        "loan_request_id": "-OPSadfxeTrEIhBqN2dM",
+        "status": "offer_expired",
+        "created_at": "2025-05-04T23:21:18.956Z",
+        "updated_at": "2025-05-04T23:24:57.501Z"
+      }
+    ]
+  },
+  {
+    "loan_request_id": "-OQC0toZWuL4HX1UhvfJ",
+    "user_id": "fPnRn3Qii15CKPXWWeRr79",
+    "loan_requests": [
+      {
+        "loan_request_id": "-OQC0toZWuL4HX1UhvfJ",
+        "status": "reviewing",
+        "created_at": "2025-05-14T04:22:31.477Z",
+        "updated_at": "2025-05-14T04:22:31.477Z"
+      },
+      {
+        "loan_request_id": "-ONeBbeY-AVtiWgpw6Am",
+        "status": "rejected",
+        "created_at": "2025-04-12T13:31:15.290Z",
+        "updated_at": "2025-04-12T13:31:15.290Z"
+      }
+    ]
+  },
+  {
+    "loan_request_id": "-OPg2IZ8yvI2cZSwv3ge",
+    "user_id": "mpEYAwdKdu3GAzeWK8igDm",
+    "loan_requests": [
+      {
+        "loan_request_id": "-OPg2IZ8yvI2cZSwv3ge",
+        "status": "reviewing",
+        "created_at": "2025-05-07T18:41:12.454Z",
+        "updated_at": "2025-05-07T18:41:12.454Z"
+      },
+      {
+        "loan_request_id": "-OLV1hrm1pyqGX9DXZxC",
+        "status": "rejected",
+        "created_at": "2025-03-16T17:40:22.425Z",
+        "updated_at": "2025-03-16T17:40:22.425Z"
+      }
+    ]
+  },
+  {
+    "loan_request_id": "-ON1__zWuLnONT75yxo3",
+    "user_id": "5rYhVHGh53jAbibZxnXEG3",
+    "loan_requests": [
+      {
+        "loan_request_id": "-ON1__zWuLnONT75yxo3",
+        "status": "reviewing",
+        "created_at": "2025-04-04T20:55:34.058Z",
+        "updated_at": "2025-04-04T20:55:34.058Z"
+      },
+      {
+        "loan_request_id": "-Nbk9qIKUmC9PrL8u4_K",
+        "status": "rejected",
+        "created_at": "2023-08-13T18:32:07.169Z",
+        "updated_at": "2023-08-13T18:32:07.169Z"
+      }
+    ]
+  },
+  {
+    "loan_request_id": "-OPhmP8rY-VtT0Uc0jxc",
+    "user_id": "6MtautwRAPYrSwLvT6XTYw",
+    "loan_requests": [
+      {
+        "loan_request_id": "-OPhmP8rY-VtT0Uc0jxc",
+        "status": "reviewing",
+        "created_at": "2025-05-08T02:46:36.468Z",
+        "updated_at": "2025-05-08T02:46:36.468Z"
+      },
+      {
+        "loan_request_id": "-MzfSf_6-UP12TC9Ng2x",
+        "status": "offer_expired",
+        "created_at": "2022-04-02T18:08:21.270Z",
+        "updated_at": "2022-04-02T18:08:21.270Z"
+      },
+      {
+        "loan_request_id": "-MyJq8ZNToVLrpC_znXe",
+        "status": "offer_expired",
+        "created_at": "2022-03-16T22:28:17.978Z",
+        "updated_at": "2022-03-16T22:30:23.127Z"
+      }
+    ]
+  },
+  {
+    "loan_request_id": "-OOU1d6MONR6rrH6PzGh",
+    "user_id": "sLAKTL7MzS2vK9awZRcbjE",
+    "loan_requests": [
+      {
+        "loan_request_id": "-OOU1d6MONR6rrH6PzGh",
+        "status": "reviewing",
+        "created_at": "2025-04-22T19:47:32.834Z",
+        "updated_at": "2025-04-22T19:47:32.834Z"
+      },
+      {
+        "loan_request_id": "-NBT7QbqcTxn-OoczfWB",
+        "status": "offer_declined",
+        "created_at": "2022-09-08T17:24:32.496Z",
+        "updated_at": "2022-09-08T17:24:32.496Z"
+      }
+    ]
+  },
+  {
+    "loan_request_id": "-OPXg35-YpKqmoKqpYVW",
+    "user_id": "tGJdAPqKhctPJuofKGchgG",
+    "loan_requests": [
+      {
+        "loan_request_id": "-OPXg35-YpKqmoKqpYVW",
+        "status": "reviewing",
+        "created_at": "2025-05-05T23:03:14.968Z",
+        "updated_at": "2025-05-05T23:03:14.968Z"
+      },
+      {
+        "loan_request_id": "-OOVhehvMY0MxTGxBNxM",
+        "status": "offer_expired",
+        "created_at": "2025-04-23T03:35:17.516Z",
+        "updated_at": "2025-04-23T03:39:30.783Z"
+      }
+    ]
+  },
+  {
+    "loan_request_id": "-OQjayT4DPF5q9CiffTB",
+    "user_id": "6iE1pj5d9FGGZv1p9R4icZ",
+    "loan_requests": [
+      {
+        "loan_request_id": "-OQjayT4DPF5q9CiffTB",
+        "status": "reviewing",
+        "created_at": "2025-05-20T21:31:36.219Z",
+        "updated_at": "2025-05-20T21:31:36.219Z"
+      },
+      {
+        "loan_request_id": "-O1T5xtEzh6gz9ufLCrn",
+        "status": "rejected",
+        "created_at": "2024-07-10T19:25:46.056Z",
+        "updated_at": "2024-07-10T19:25:46.056Z"
+      },
+      {
+        "loan_request_id": "-NCBuJMRULT73nA2Wf5y",
+        "status": "offer_expired",
+        "created_at": "2022-09-17T19:25:00.373Z",
+        "updated_at": "2022-09-17T19:28:21.108Z"
+      }
+    ]
+  },
+  {
+    "loan_request_id": "-ONtQExPTbU02BH_UHrI",
+    "user_id": "xmDsRtx8r7nPoDW7fFXhDd",
+    "loan_requests": [
+      {
+        "loan_request_id": "-ONtQExPTbU02BH_UHrI",
+        "status": "reviewing",
+        "created_at": "2025-04-15T12:35:46.627Z",
+        "updated_at": "2025-04-15T12:35:46.627Z"
+      },
+      {
+        "loan_request_id": "-MsQXLOdxGlVCUDc-HbT",
+        "status": "offer_expired",
+        "created_at": "2022-01-02T16:04:58.187Z",
+        "updated_at": "2022-01-02T16:11:10.392Z"
+      }
+    ]
+  },
+  {
+    "loan_request_id": "-OQp81XrJ2HsH1syrrDS",
+    "user_id": "cVPAG6wNQ4CGcMKV6rJLFV",
+    "loan_requests": [
+      {
+        "loan_request_id": "-OQp81XrJ2HsH1syrrDS",
+        "status": "reviewing",
+        "created_at": "2025-05-21T23:18:29.798Z",
+        "updated_at": "2025-05-21T23:18:29.798Z"
+      },
+      {
+        "loan_request_id": "-MncM5JeNsOMoAdzdypP",
+        "status": "rejected",
+        "created_at": "2021-11-04T00:32:23.506Z",
+        "updated_at": "2021-11-04T00:32:23.506Z"
+      }
+    ]
+  }
+]
