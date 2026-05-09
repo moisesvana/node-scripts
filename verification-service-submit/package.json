@@ -1,0 +1,23 @@
+{
+  "name": "verification-service-submit",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "check-without-verification.js",
+  "scripts": {
+    "check-without-verification": "node --max-old-space-size=8192 check-without-verification.js",
+    "create-missing-verifications": "node --max-old-space-size=8192 create-missing-verifications.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "Scripts to detect loan requests missing verifications and submit/create them via the credit private API.",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.901.0",
+    "@aws-sdk/lib-dynamodb": "^3.901.0",
+    "axios": "^1.13.5",
+    "big-json": "^3.2.0",
+    "dotenv": "^16.4.5",
+    "@aws-sdk/client-eventbridge": "^3.267.0",
+    "humps": "^2.0.1"
+  }
+}
