@@ -232,3 +232,7 @@ for (let i = 0; i < toCheck.length; i += BATCH_SIZE) {
 }
 const response = { toCreate, toSubmit };
 console.log(JSON.stringify(response, null, 2));
+
+/* usage:
+node --max-old-space-size=8192 check-without-verification.js > verifications_to_process.json
+*/

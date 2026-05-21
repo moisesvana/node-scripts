@@ -22,8 +22,12 @@ const ddbDocClient = DynamoDBDocumentClient.from(ddbClient, translateConfig);
 const eventBusClient = new EventBusClient();
 const SUBMIT_URL =
   "https://credit.api.vana-private.com/v1/users/:user_id/verifications/:verification_id/submission";
+const CREATION_URL =
+  "https://credit.api.vana-private.com/v1/users/:user_id/verifications"; // {{CREDIT_API_PRIVATE_HOST}}/users/me3J5KBRwHCkymUBdvNncQ/verifications
 const LIST_URL =
   "https://credit.api.vana-private.com/v1/users/:user_id/verifications";
+
+const CATEGORY_NAME = "credit-document-verification";
 
 const readJsonFile = async (path) => {
   return new Promise((resolve, reject) => {
@@ -48,6 +52,16 @@ const submitVerification = async (userId, verificationId, data) => {
     data,
     { headers },
   );
+};
+
+const createVerification = async (userId, data) => {
+  const headers = {
+    "Content-Type": "application/json",
+    "x-api-key": process.env.CREDIT_PRIVATE_API_KEY,
+  };
+  return axios.post(CREATION_URL.replace(":user_id", userId), data, {
+    headers,
+  });
 };
 
 const listVerifications = async (userId) => {
@@ -95,16 +109,12 @@ const sleep = (delay) => {
 
 const createVerifications = async (toCreate) => {
   for (const record of toCreate) {
-    const categoryId = `${record.country.toLowerCase()}-credit-document-verification`;
-    await eventBusClient.putEvent(
-      "VerificationTrigger.Backfill.Verification.Requested",
-      {
-        data: {
-          user_id: record.userId,
-          category_id: categoryId,
-        },
+    const categoryId = `${record.country.toLowerCase()}-${CATEGORY_NAME}`;
+    await createVerification(record.userId, {
+      data: {
+        category_id: categoryId,
       },
-    );
+    });
     await sleep(500);
   }
 };
@@ -112,7 +122,7 @@ const createVerifications = async (toCreate) => {
 const submitVerificationss = async (toSubmit) => {
   for (const record of toSubmit) {
     const verifications = await listVerifications(record.userId);
-    const categoryId = `${record.country.toLowerCase()}-credit-document-verification`;
+    const categoryId = `${record.country.toLowerCase()}-${CATEGORY_NAME}`;
     const verification = verifications.find(
       (v) => v.category === categoryId && v.status === "required",
     );
