@@ -4,8 +4,8 @@
   "type": "module",
   "main": "check-without-verification.js",
   "scripts": {
-    "check-without-verification": "node --max-old-space-size=8192 check-without-verification.js",
-    "create-missing-verifications": "node --max-old-space-size=8192 create-missing-verifications.js"
+    "check-without-verification": "node --max-old-space-size=8192 check-without-verification.js > verifications_to_process.json",
+    "create-missing-verifications": "node --max-old-space-size=8192 create-missing-verifications.js verifications_to_process.json"
   },
   "keywords": [],
   "author": "",
