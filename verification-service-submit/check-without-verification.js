@@ -150,12 +150,14 @@ const getByBatch = async (batch, toCreate, toSubmit) => {
       updated_at: updatedAt,
     } = record;
     const country = getCountry(productId);
-    const [verification, blobs, lmsTicket, lmsTicketV2] = await Promise.all([
-      getVerificationsByUserAndCountry(userId, country),
-      getBlobsByUser(userId),
-      getLMSTicket(loanRequestId),
-      getLMSTicketV2(loanRequestId),
-    ]);
+    const [verification, blobs /* lmsTicket, lmsTicketV2*/] = await Promise.all(
+      [
+        getVerificationsByUserAndCountry(userId, country),
+        getBlobsByUser(userId),
+        //getLMSTicket(loanRequestId),
+        //getLMSTicketV2(loanRequestId),
+      ],
+    );
     const data = {
       userId,
       country,
